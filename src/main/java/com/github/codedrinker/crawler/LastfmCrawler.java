@@ -46,7 +46,7 @@ public class LastfmCrawler {
     private LastfmResult extractTracks(Element element) {
         Elements tracks = element.getElementsByClass("chartlist-name");
         LastfmResult result = new LastfmResult();
-        result.setTracks(new ArrayList<>());
+        result.setTracks(new ArrayList<LastfmTrack>());
         for (Element track : tracks) {
             String artist = track.getElementsByClass("chartlist-artists").text();
             String name = track.getElementsByClass("link-block-target").text();
@@ -61,12 +61,12 @@ public class LastfmCrawler {
     private LastfmResult extractAlbums(Element element) {
         Elements albums = element.getElementsByTag("li");
         LastfmResult result = new LastfmResult();
-        result.setAlbums(new ArrayList<>());
+        result.setAlbums(new ArrayList<LastfmAlbum>());
         for (Element album : albums) {
             String avatar = extractImage(album);
             String name = extractName(album);
             LastfmAlbum lastfmAlbum = new LastfmAlbum();
-            LastfmImage lastfmImage = new LastfmImage();
+            final LastfmImage lastfmImage = new LastfmImage();
             lastfmImage.setSize("medium");
             lastfmImage.setText(avatar);
             lastfmAlbum.setImage(new ArrayList<LastfmImage>() {{
@@ -81,12 +81,12 @@ public class LastfmCrawler {
     private LastfmResult extractArtists(Element element) {
         Elements artists = element.getElementsByTag("li");
         LastfmResult artistResult = new LastfmResult();
-        artistResult.setArtists(new ArrayList<>());
+        artistResult.setArtists(new ArrayList<LastfmArtist>());
         for (Element artist : artists) {
             String avatar = extractImage(artist);
             String name = extractName(artist);
             LastfmArtist lastfmArtist = new LastfmArtist();
-            LastfmImage lastfmImage = new LastfmImage();
+            final LastfmImage lastfmImage = new LastfmImage();
             lastfmImage.setSize("medium");
             lastfmImage.setText(avatar);
             lastfmArtist.setImage(new ArrayList<LastfmImage>() {{

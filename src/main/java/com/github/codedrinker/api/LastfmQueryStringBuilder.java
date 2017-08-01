@@ -5,6 +5,7 @@ import com.github.codedrinker.exception.LastfmException;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.http.client.utils.URIBuilder;
 
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -15,11 +16,13 @@ public class LastfmQueryStringBuilder {
         try {
             Map<String, String> describe = BeanUtils.describe(lastfmQuery);
             final URIBuilder uriBuilder = new URIBuilder().setScheme("http").setHost(host).setPath(path);
-            describe.forEach((k, v) -> {
-                if (!k.equals("class") && v != null) {
-                    uriBuilder.addParameter(k, v);
+            Iterator it = describe.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, String> pair = (Map.Entry) it.next();
+                if (!pair.getKey().equals("class") && pair.getValue() != null) {
+                    uriBuilder.addParameter(pair.getKey(), pair.getValue());
                 }
-            });
+            }
             return uriBuilder.toString();
         } catch (Exception e) {
             throw new LastfmException(e.getMessage(), e);
