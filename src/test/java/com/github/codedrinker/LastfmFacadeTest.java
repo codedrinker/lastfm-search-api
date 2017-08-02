@@ -1,6 +1,5 @@
 package com.github.codedrinker;
 
-import com.github.codedrinker.auth.LastfmAuthorization;
 import com.github.codedrinker.dto.LastfmQuery;
 import com.github.codedrinker.model.LastfmCompositeResult;
 import com.github.codedrinker.model.LastfmResult;
@@ -17,9 +16,7 @@ public class LastfmFacadeTest {
 
     @Before
     public void setUp() throws Exception {
-        LastfmAuthorization authorization = new LastfmAuthorization();
-        authorization.setApiKey("key");
-        lastfmFacade = new LastfmFacade(authorization);
+        lastfmFacade = new LastfmFacade();
     }
 
     @Test

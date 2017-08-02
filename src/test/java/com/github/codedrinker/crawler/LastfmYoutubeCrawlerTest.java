@@ -1,7 +1,9 @@
 package com.github.codedrinker.crawler;
 
-import com.github.codedrinker.auth.YoutubeAuthorization;
+import com.github.codedrinker.config.Configuration;
+import com.github.codedrinker.helpers.Loader;
 import com.github.codedrinker.model.LastfmTrack;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -10,25 +12,23 @@ import org.junit.Test;
  */
 public class LastfmYoutubeCrawlerTest {
     LastfmCrawler lastfmCrawler;
-    YoutubeAuthorization youtubeAuthorization;
+    Configuration configuration;
 
     @Before
     public void setUp() throws Exception {
         lastfmCrawler = new LastfmCrawler();
-        youtubeAuthorization = new YoutubeAuthorization();
-        youtubeAuthorization.setApiKey("Youtube-Key");
-        youtubeAuthorization.setName("LastFM");
+        configuration = new Loader().load();
     }
 
     @Test
     public void get_not_found() throws Exception {
-        LastfmTrack lastfmTrack = lastfmCrawler.fetch("Adele", "Rolling in the Deep", youtubeAuthorization);
-        System.out.println(lastfmTrack);
+        LastfmTrack lastfmTrack = lastfmCrawler.fetch("Adele", "Rolling in the Deep", configuration);
+        Assert.assertNotNull(lastfmTrack.getYoutubeId());
     }
 
     @Test
     public void get_found() throws Exception {
-        LastfmTrack lastfmTrack = lastfmCrawler.fetch("Adele", "Chasing Pavements", youtubeAuthorization);
-        System.out.println(lastfmTrack);
+        LastfmTrack lastfmTrack = lastfmCrawler.fetch("Adele", "Chasing Pavements", configuration);
+        Assert.assertNotNull(lastfmTrack.getYoutubeId());
     }
 }

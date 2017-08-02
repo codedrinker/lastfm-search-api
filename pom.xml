@@ -64,15 +64,5 @@
             <version>1.7.25</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>com.google.apis</groupId>
-            <artifactId>google-api-services-youtube</artifactId>
-            <version>v3-rev107-1.18.0-rc</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.http-client</groupId>
-            <artifactId>google-http-client-jackson2</artifactId>
-            <version>1.18.0-rc</version>
-        </dependency>
     </dependencies>
 </project>

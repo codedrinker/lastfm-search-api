@@ -18,7 +18,7 @@ public class LastQueryStringBuilderTest {
         lastfmQuery.setFormat("json");
         lastfmQuery.setMethod("track.search");
         String endpoint = LastfmQueryStringBuilder.build(baseUrl, path, lastfmQuery);
-        Assert.assertEquals("http://ws.audioscrobbler.com/2.0/?method=track.search&api_key=b3fe1d25a1028cf1b39031cfaaccb6f4&format=json&track=Believe", endpoint);
+        Assert.assertEquals("http://ws.audioscrobbler.com/2.0/?api_key=key&track=Believe&method=track.search&format=json", endpoint);
 
     }
 }

@@ -12,6 +12,15 @@ public abstract class AbstractLastfm {
     private String url;
     private String streamable;
     private List<LastfmImage> image;
+    private String mbid;
+
+    public String getMbid() {
+        return mbid;
+    }
+
+    public void setMbid(String mbid) {
+        this.mbid = mbid;
+    }
 
     public String getName() {
         return name;
