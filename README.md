@@ -2,11 +2,13 @@
 
 Last.fm search tracks, artists, albums API wrapper in java
 
-### Usage
+## Usage
+###Install
 ```bash
 git clone https://github.com/codedrinker/lastfm-search-api.git
-mvn install 
+mvn install -DskipTests
 ```
+###Dependency
 ```xml
 <dependencies>
     <dependency>
@@ -16,37 +18,49 @@ mvn install
     </dependency>
 </dependencies>
 ```
-### Search Tracks
+### Get Instance
+#### Spring
+```xml
+<bean id="lastfmFacade" class="com.github.codedrinker.LastfmFacade">
+    <constructor-arg>
+        <bean class="com.github.codedrinker.config.Configuration">
+            <property name="lastfmAppKey" value="${lastfm.appkey}"></property>
+            <property name="lastfmYoutubeAppName" value="${lastfm.appName}"></property>
+            <property name="lastfmYoutubeAppKey" value="${lastfm.youtubeKey}"></property>
+        </bean>
+    </constructor-arg>
+</bean>
+```
+#### Java
+Make sure `lastfm.properties` in classpath. `LastfmFacade` will auto load configuration.
 ```java
-LastfmAuthorization authorization = new LastfmAuthorization();
-authorization.setApiKey("app key");
-LastfmFacade lastfmFacade = new LastfmFacade(authorization);
+LastfmFacade lastfmFacade = new LastfmFacade();
+```
+
+#### Search Tracks
+```java
+LastfmFacade lastfmFacade = new LastfmFacade();
 LastfmQuery queryDTO = new LastfmQuery();
 queryDTO.setTrack("Hello");
 queryDTO.setLimit(3);
-LastfmResult lastfmResult = lastfmFacade.searchTrack(queryDTO);
-
+LastfmResult tracks = lastfmFacade.searchTrack(queryDTO);
 ```
 
 ### Search Albums
 ```java
-LastfmAuthorization authorization = new LastfmAuthorization();
-authorization.setApiKey("app key");
-LastfmFacade lastfmFacade = new LastfmFacade(authorization);
+LastfmFacade lastfmFacade = new LastfmFacade();
 LastfmQuery queryDTO = new LastfmQuery();
 queryDTO.setAlbum("Hello");
 queryDTO.setLimit(3);
-LastfmResult lastfmResult = lastfmFacade.searchAlbum(queryDTO);
+LastfmResult albums = lastfmFacade.searchAlbum(queryDTO);
 ```
 
 ### Search Artists
 ```java
-LastfmAuthorization authorization = new LastfmAuthorization();
-authorization.setApiKey("app key");
-LastfmFacade lastfmFacade = new LastfmFacade(authorization);
+LastfmFacade lastfmFacade = new LastfmFacade();
 LastfmQuery queryDTO = new LastfmQuery();
 queryDTO.setArtist("Hello");
 queryDTO.setLimit(3);
-LastfmResult lastfmResult = lastfmFacade.searchArtist(queryDTO);
+LastfmResult artists = lastfmFacade.searchArtist(queryDTO);
 
 ```
