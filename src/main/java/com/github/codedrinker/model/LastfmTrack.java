@@ -6,6 +6,15 @@ package com.github.codedrinker.model;
 public class LastfmTrack extends AbstractLastfm {
     private String artist;
     private Long listeners;
+    private String youtubeId;
+
+    public String getYoutubeId() {
+        return youtubeId;
+    }
+
+    public void setYoutubeId(String youtubeId) {
+        this.youtubeId = youtubeId;
+    }
 
     public String getArtist() {
         return artist;

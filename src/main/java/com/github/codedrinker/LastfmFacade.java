@@ -5,12 +5,15 @@ import com.github.codedrinker.api.LastfmApi;
 import com.github.codedrinker.api.LastfmArtistApi;
 import com.github.codedrinker.api.LastfmTrackApi;
 import com.github.codedrinker.auth.LastfmAuthorization;
+import com.github.codedrinker.auth.YoutubeAuthorization;
 import com.github.codedrinker.crawler.LastfmCrawler;
+import com.github.codedrinker.crawler.LastfmSearchCrawler;
 import com.github.codedrinker.dto.LastfmQuery;
 import com.github.codedrinker.exception.LastfmCrawlerException;
 import com.github.codedrinker.exception.LastfmException;
 import com.github.codedrinker.model.LastfmCompositeResult;
 import com.github.codedrinker.model.LastfmResult;
+import com.github.codedrinker.model.LastfmTrack;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +22,30 @@ import org.slf4j.LoggerFactory;
  * Created by codedrinker on 28/07/2017.
  */
 public class LastfmFacade {
-    private LastfmAuthorization authorization;
-
-    Logger logger = LoggerFactory.getLogger(LastfmFacade.class);
+    private LastfmAuthorization lastfmAuthorization;
+    private YoutubeAuthorization youtubeAuthorization;
 
     public LastfmFacade(LastfmAuthorization authorization) {
-        this.authorization = authorization;
+        this.lastfmAuthorization = authorization;
     }
+
+    public LastfmAuthorization getLastfmAuthorization() {
+        return lastfmAuthorization;
+    }
+
+    public void setLastfmAuthorization(LastfmAuthorization lastfmAuthorization) {
+        this.lastfmAuthorization = lastfmAuthorization;
+    }
+
+    public YoutubeAuthorization getYoutubeAuthorization() {
+        return youtubeAuthorization;
+    }
+
+    public void setYoutubeAuthorization(YoutubeAuthorization youtubeAuthorization) {
+        this.youtubeAuthorization = youtubeAuthorization;
+    }
+
+    Logger logger = LoggerFactory.getLogger(LastfmFacade.class);
 
     public LastfmResult searchTrack(LastfmQuery queryDTO) throws LastfmException {
         LastfmApi lastfmTrackApi = new LastfmTrackApi();
@@ -34,7 +54,7 @@ public class LastfmFacade {
                 return null;
             }
             queryDTO.setMethod("track.search");
-            queryDTO.setApi_key(authorization.getApiKey());
+            queryDTO.setApi_key(lastfmAuthorization.getApiKey());
             try {
                 return lastfmTrackApi.search(queryDTO);
             } catch (Exception e) {
@@ -52,7 +72,7 @@ public class LastfmFacade {
                 return null;
             }
             queryDTO.setMethod("artist.search");
-            queryDTO.setApi_key(authorization.getApiKey());
+            queryDTO.setApi_key(lastfmAuthorization.getApiKey());
             try {
                 return lastArtistApi.search(queryDTO);
             } catch (Exception e) {
@@ -70,7 +90,7 @@ public class LastfmFacade {
                 return null;
             }
             queryDTO.setMethod("album.search");
-            queryDTO.setApi_key(authorization.getApiKey());
+            queryDTO.setApi_key(lastfmAuthorization.getApiKey());
             try {
                 return lastAlbumApi.search(queryDTO);
             } catch (Exception e) {
@@ -84,7 +104,7 @@ public class LastfmFacade {
     public LastfmCompositeResult search(LastfmQuery queryDTO) throws LastfmException {
         LastfmCompositeResult lastfmCompositeResult = new LastfmCompositeResult();
 
-        LastfmCrawler lastfmCrawler = new LastfmCrawler();
+        LastfmSearchCrawler lastfmCrawler = new LastfmSearchCrawler();
         try {
             lastfmCompositeResult = lastfmCrawler.search(queryDTO.getQuery());
             return lastfmCompositeResult;
@@ -117,5 +137,12 @@ public class LastfmFacade {
         }
 
         return lastfmCompositeResult;
+    }
+
+    public LastfmTrack fetchTrack(String artist, String track) throws LastfmException {
+        if (youtubeAuthorization == null || youtubeAuthorization.getApiKey() == null) {
+            throw new LastfmException("Youtube Appkey is required");
+        }
+        return new LastfmCrawler().fetch(artist, track, youtubeAuthorization);
     }
 }

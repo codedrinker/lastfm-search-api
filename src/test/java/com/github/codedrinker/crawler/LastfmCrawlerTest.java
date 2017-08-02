@@ -10,11 +10,11 @@ import org.junit.Test;
  * Created by codedrinker on 28/07/2017.
  */
 public class LastfmCrawlerTest {
-    LastfmCrawler lastfmCrawler;
+    LastfmSearchCrawler lastfmCrawler;
 
     @Before
     public void setUp() throws Exception {
-        lastfmCrawler = new LastfmCrawler();
+        lastfmCrawler = new LastfmSearchCrawler();
     }
 
     @Test
