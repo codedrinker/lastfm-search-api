@@ -3,12 +3,12 @@
 Last.fm search tracks, artists, albums API wrapper in java
 
 ## Usage
-###Install
+### Install
 ```bash
 git clone https://github.com/codedrinker/lastfm-search-api.git
 mvn install -DskipTests
 ```
-###Dependency
+### Dependency
 ```xml
 <dependencies>
     <dependency>
