@@ -32,6 +32,7 @@ public class LastfmCrawler {
     Logger logger = LoggerFactory.getLogger(LastfmCrawler.class);
 
     public LastfmTrack fetch(String artist, String track, Configuration configuration) {
+        LastfmTrack lastfmTrack = new LastfmTrack();
         try {
             Connection connect = Jsoup.connect(String.format(lastfmEndpoint, URLEncoder.encode(artist, "UTF-8"), URLEncoder.encode(track, "UTF-8")));
             connect.userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36");
@@ -41,21 +42,47 @@ public class LastfmCrawler {
                 Element element = elements.get(0);
                 String youtubeId = element.attr("data-youtube-id");
                 if (StringUtils.isNotBlank(youtubeId)) {
-                    LastfmTrack lastfmTrack = new LastfmTrack();
                     lastfmTrack.setArtist(artist);
                     lastfmTrack.setName(track);
                     lastfmTrack.setYoutubeId(youtubeId);
                     return lastfmTrack;
                 } else {
-                    return fetchByAPI(artist, track, configuration);
+                    lastfmTrack = fetchByAPI(artist, track, configuration);
                 }
             } else {
-                return fetchByAPI(artist, track, configuration);
+                lastfmTrack = fetchByAPI(artist, track, configuration);
             }
+
+            Elements durationElements = document.select(".header-title .header-title-duration");
+            if (durationElements != null && durationElements.size() != 0) {
+                try {
+                    Element durationElement = durationElements.get(0);
+                    String text = durationElement.text();
+                    logger.debug("extract duration text is -> {}", text);
+                    if (StringUtils.isNotBlank(text)) {
+                        String duration = text.substring(1, text.length() - 1);
+                        logger.debug("extract duration is -> {}", duration);
+                        String[] split = StringUtils.split(duration, ":");
+                        if (split.length == 2) {
+                            int mins = Integer.parseInt(split[0]) * 60;
+                            int secs = Integer.parseInt(split[1]);
+                            logger.debug("extract duration millis is -> {}", (mins + secs) * 1000L);
+                            lastfmTrack.setDuration((mins + secs) * 1000L);
+                        } else if (split.length == 1) {
+                            int secs = Integer.parseInt(split[0]);
+                            logger.debug("extract duration millis is -> {}", secs * 1000L);
+                            lastfmTrack.setDuration(secs * 1000L);
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    logger.error("extract duration error");
+                }
+            }
+
         } catch (Exception e) {
             logger.error("crawler fetch info by page error -> {}", e.getMessage());
         }
-        return null;
+        return lastfmTrack;
     }
 
     private LastfmTrack fetchByAPI(String artist, String track, Configuration configuration) {

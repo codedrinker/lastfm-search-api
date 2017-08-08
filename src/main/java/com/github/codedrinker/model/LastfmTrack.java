@@ -7,6 +7,15 @@ public class LastfmTrack extends AbstractLastfm {
     private String artist;
     private Long listeners;
     private String youtubeId;
+    private Long duration;
+
+    public Long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Long duration) {
+        this.duration = duration;
+    }
 
     public String getYoutubeId() {
         return youtubeId;

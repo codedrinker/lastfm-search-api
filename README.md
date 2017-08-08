@@ -14,7 +14,7 @@ mvn install -DskipTests
     <dependency>
         <groupId>com.github.codedrinker</groupId>
         <artifactId>lastfm-search-api</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </dependency>
 </dependencies>
 ```
