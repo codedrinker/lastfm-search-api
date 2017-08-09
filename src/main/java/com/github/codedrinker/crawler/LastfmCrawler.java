@@ -20,14 +20,18 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
 import java.net.URLEncoder;
+import java.util.Date;
 
 /**
  * Created by codedrinker on 01/08/2017.
  */
 public class LastfmCrawler {
     private String lastfmEndpoint = "https://www.last.fm/music/%s/_/%s";
-    private String youtubeEndpoint = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=%s&type=video&fields=%s&key=%s";
+    private String youtubeSearchEndpoint = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=%s&type=video&fields=%s&key=%s";
+    private String youtubeVideoEndpoint = " https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=%s&key=%s";
 
     Logger logger = LoggerFactory.getLogger(LastfmCrawler.class);
 
@@ -47,37 +51,13 @@ public class LastfmCrawler {
                     lastfmTrack.setYoutubeId(youtubeId);
                     return lastfmTrack;
                 } else {
-                    lastfmTrack = fetchByAPI(artist, track, configuration);
+                    lastfmTrack = searchByApi(artist, track, configuration);
                 }
             } else {
-                lastfmTrack = fetchByAPI(artist, track, configuration);
+                lastfmTrack = searchByApi(artist, track, configuration);
             }
 
-            Elements durationElements = document.select(".header-title .header-title-duration");
-            if (durationElements != null && durationElements.size() != 0) {
-                try {
-                    Element durationElement = durationElements.get(0);
-                    String text = durationElement.text();
-                    logger.debug("extract duration text is -> {}", text);
-                    if (StringUtils.isNotBlank(text)) {
-                        String duration = text.substring(1, text.length() - 1);
-                        logger.debug("extract duration is -> {}", duration);
-                        String[] split = StringUtils.split(duration, ":");
-                        if (split.length == 2) {
-                            int mins = Integer.parseInt(split[0]) * 60;
-                            int secs = Integer.parseInt(split[1]);
-                            logger.debug("extract duration millis is -> {}", (mins + secs) * 1000L);
-                            lastfmTrack.setDuration((mins + secs) * 1000L);
-                        } else if (split.length == 1) {
-                            int secs = Integer.parseInt(split[0]);
-                            logger.debug("extract duration millis is -> {}", secs * 1000L);
-                            lastfmTrack.setDuration(secs * 1000L);
-                        }
-                    }
-                } catch (NumberFormatException e) {
-                    logger.error("extract duration error");
-                }
-            }
+            setTrackDuration(lastfmTrack, document, configuration);
 
         } catch (Exception e) {
             logger.error("crawler fetch info by page error -> {}", e.getMessage());
@@ -85,14 +65,87 @@ public class LastfmCrawler {
         return lastfmTrack;
     }
 
-    private LastfmTrack fetchByAPI(String artist, String track, Configuration configuration) {
+    private void setTrackDuration(LastfmTrack lastfmTrack, Document document, Configuration configuration) {
+        Elements durationElements = document.select(".header-title .header-title-duration");
+        if (durationElements != null && durationElements.size() != 0) {
+            try {
+                Element durationElement = durationElements.get(0);
+                String text = durationElement.text();
+                logger.debug("extract duration text is -> {}", text);
+                if (StringUtils.isNotBlank(text)) {
+                    String duration = text.substring(1, text.length() - 1);
+                    logger.debug("extract duration is -> {}", duration);
+                    String[] split = StringUtils.split(duration, ":");
+                    if (split.length == 2) {
+                        int mins = Integer.parseInt(split[0]) * 60;
+                        int secs = Integer.parseInt(split[1]);
+                        logger.debug("extract duration millis is -> {}", (mins + secs) * 1000L);
+                        lastfmTrack.setDuration((mins + secs) * 1000L);
+                    } else if (split.length == 1) {
+                        int secs = Integer.parseInt(split[0]);
+                        logger.debug("extract duration millis is -> {}", secs * 1000L);
+                        lastfmTrack.setDuration(secs * 1000L);
+                    }
+                }
+            } catch (NumberFormatException e) {
+                logger.error("extract duration error");
+            }
+        }
+
+        if (lastfmTrack.getDuration() == null || lastfmTrack.getDuration() == 0) {
+            Long duration = getDurationByApi(lastfmTrack.getYoutubeId(), configuration);
+            lastfmTrack.setDuration(duration);
+        }
+    }
+
+    private Long getDurationByApi(String youtubeId, Configuration configuration) {
         try {
-            CloseableHttpClient httpclient = HttpClients.createDefault();
-            String api = String.format(youtubeEndpoint, URLEncoder.encode(artist + " " + track, "UTF-8"), URLEncoder.encode("items/id", "UTF-8"), configuration.getLastfmYoutubeAppKey());
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+            String api = String.format(youtubeVideoEndpoint, URLEncoder.encode(youtubeId, "UTF-8"), configuration.getLastfmYoutubeAppKey());
+            logger.info("get youtube video api : {}", api);
+            HttpGet httpGet = new HttpGet(api);
+            httpGet.addHeader("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36");
+            CloseableHttpResponse response = httpClient.execute(httpGet);
+            try {
+                if (response.getStatusLine() != null && response.getStatusLine().getStatusCode() == 200) {
+                    String res = EntityUtils.toString(response.getEntity());
+                    JSONObject jsonObject = JSON.parseObject(res);
+                    JSONArray items = jsonObject.getJSONArray("items");
+                    if (items != null && items.size() != 0) {
+                        JSONObject video = (JSONObject) items.get(0);
+                        if (video != null && video.containsKey("contentDetails")) {
+                            JSONObject contentDetails = video.getJSONObject("contentDetails");
+                            if (contentDetails.containsKey("duration")) {
+                                String durationText = contentDetails.getString("duration");
+                                Duration dur = DatatypeFactory.newInstance().newDuration(durationText);
+                                long timeInMillis = dur.getTimeInMillis(new Date());
+                                return timeInMillis;
+                            }
+                        }
+                    } else {
+                        return null;
+                    }
+
+                } else {
+                    throw new LastfmException(response.getEntity().toString());
+                }
+            } finally {
+                response.close();
+            }
+        } catch (Exception e) {
+            logger.error("crawler fetch info by api error -> {}", e.getMessage());
+        }
+        return null;
+    }
+
+    private LastfmTrack searchByApi(String artist, String track, Configuration configuration) {
+        try {
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+            String api = String.format(youtubeSearchEndpoint, URLEncoder.encode(artist + " " + track, "UTF-8"), URLEncoder.encode("items/id", "UTF-8"), configuration.getLastfmYoutubeAppKey());
             logger.info("search youtube api : {}", api);
             HttpGet httpGet = new HttpGet(api);
             httpGet.addHeader("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36");
-            CloseableHttpResponse response = httpclient.execute(httpGet);
+            CloseableHttpResponse response = httpClient.execute(httpGet);
             try {
                 if (response.getStatusLine() != null && response.getStatusLine().getStatusCode() == 200) {
                     String res = EntityUtils.toString(response.getEntity());

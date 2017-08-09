@@ -30,6 +30,16 @@ public class LastfmFacadeTest {
     }
 
     @Test
+    public void searchTrack4Chinese() throws Exception {
+        LastfmQuery queryDTO = new LastfmQuery();
+        queryDTO.setTrack("童话镇");
+        queryDTO.setLimit(1);
+        LastfmResult lastfmResult = lastfmFacade.searchTrack(queryDTO);
+        Assert.assertEquals(1, lastfmResult.getTracks().size());
+        Assert.assertTrue(StringUtils.containsIgnoreCase(lastfmResult.getTracks().get(0).getName(),"童话镇"));
+    }
+
+    @Test
     public void searchArtist() throws Exception {
         LastfmQuery queryDTO = new LastfmQuery();
         queryDTO.setArtist("Hello");
