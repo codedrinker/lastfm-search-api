@@ -31,4 +31,10 @@ public class LastfmYoutubeCrawlerTest {
         LastfmTrack lastfmTrack = lastfmCrawler.fetch("Adele", "Chasing Pavements", configuration);
         Assert.assertNotNull(lastfmTrack.getYoutubeId());
     }
+    @Test
+    public void get_found_without_duration() throws Exception {
+        LastfmTrack lastfmTrack = lastfmCrawler.fetch("陈一发儿", "童话镇", configuration);
+        Assert.assertNotNull(lastfmTrack.getYoutubeId());
+        Assert.assertNotNull(lastfmTrack.getDuration());
+    }
 }

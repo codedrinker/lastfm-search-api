@@ -31,7 +31,7 @@ import java.util.Date;
 public class LastfmCrawler {
     private String lastfmEndpoint = "https://www.last.fm/music/%s/_/%s";
     private String youtubeSearchEndpoint = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=%s&type=video&fields=%s&key=%s";
-    private String youtubeVideoEndpoint = " https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=%s&key=%s";
+    private String youtubeVideoEndpoint = "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=%s&key=%s";
 
     Logger logger = LoggerFactory.getLogger(LastfmCrawler.class);
 
@@ -49,7 +49,6 @@ public class LastfmCrawler {
                     lastfmTrack.setArtist(artist);
                     lastfmTrack.setName(track);
                     lastfmTrack.setYoutubeId(youtubeId);
-                    return lastfmTrack;
                 } else {
                     lastfmTrack = searchByApi(artist, track, configuration);
                 }
